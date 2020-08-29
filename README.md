@@ -2,7 +2,8 @@
 Test CDN speed by ip(v6)
 
 # Usage
-1. Edit `config.yml`
-2. Run  ```./CdnSpeedTest```
-3. Results are in ```result_*.csv```
+1. [Download binary](https://github.com/regou/CDNSpeedTest/releases)
+2. Edit `config.yml`
+3. Run  ```./CdnSpeedTest```
+4. Results are in ```result_*.csv```
 
