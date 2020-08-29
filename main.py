@@ -1,13 +1,13 @@
 import random,time
 from pathlib import Path
 from ipaddress import IPv6Network, IPv6Address
-from src.SpeedTest import SpeedTest
+from SpeedTest import SpeedTest
 from progressbar import ProgressBar
 from pandas import DataFrame
 import pydash as _
 import config_with_yaml
 config = config_with_yaml.load("config.yml")
-seed_num = config.getPropertyWithDefault('seed_num', 10)
+seed_num = config.getPropertyWithDefault('number_of_random_ips', 10)
 speed_tests = []
 
 from_txt_path = Path(config.getPropertyWithDefault('ip_ranges_file', './ipv6.txt'))

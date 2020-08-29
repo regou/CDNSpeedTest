@@ -1,4 +1,4 @@
-seed_num: 15
+number_of_random_ips: 15
 connect_timeout: 1
 ip_ranges_file: "./ipv6.txt" #https://www.cloudflare.com/ips-v6
 test_url:
