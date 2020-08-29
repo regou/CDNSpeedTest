@@ -1,12 +1,13 @@
-import random,time
+import random, time
 from pathlib import Path
 from ipaddress import IPv6Network, IPv6Address
 from SpeedTest import SpeedTest
 from progressbar import ProgressBar
-from pandas import DataFrame
 import pydash as _
+import csv
 import config_with_yaml
-config = config_with_yaml.load("config.yml")
+
+config = config_with_yaml.load(Path("config.yml"))
 seed_num = config.getPropertyWithDefault('number_of_random_ips', 10)
 speed_tests = []
 
@@ -35,10 +36,9 @@ for x in range(seed_num):
     speed_tests.append(st)
 
 bar = ProgressBar(max_value=len(speed_tests))
-columns=['ip', 'Speed(Mb/s)']
-df = DataFrame([], columns=columns)
+columns = ['ip', 'When', 'Speed(Mb/s)']
 
-
+data = []
 def run_with_progress(st, index):
     global df
     bar.update(index)
@@ -46,13 +46,31 @@ def run_with_progress(st, index):
         st.test()
     except Exception:
         pass
-    df = df.append(
-        DataFrame([[st.testIp, st.speed]], columns=columns),
-        ignore_index=True
-    )
+    data.append([st.testIp, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.startTime)), st.speed])
     time.sleep(0.005)
 
 
 _.for_each(speed_tests, run_with_progress)
 
-df.to_csv('./result_v6.csv', index_label='index', encoding='utf-8')
+
+has_header = False
+try:
+    with open('result.csv', mode='r', newline='') as csvfile:
+        if csv.Sniffer().has_header(csvfile.read(1024)):
+            has_header = True
+except Exception:
+    pass
+
+with open('result.csv', 'a', newline='') as csvfile:
+    fieldnames = columns
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+    if not has_header:
+        writer.writeheader()
+
+    _.for_each(data, lambda row: writer.writerow({
+        fieldnames[0]: row[0],
+        fieldnames[1]: row[1],
+        fieldnames[2]: row[2]
+    }))
+

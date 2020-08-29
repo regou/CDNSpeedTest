@@ -31,6 +31,7 @@ class SpeedTest:
             session.mount(prefix=prefix, adapter=ForcedIPHTTPSAdapter(dest_ip=self.testIp))
 
             def real_start():
+                self.startTime = time.time()
                 return session.get(
                     f"{prefix}{self.url['path']}",
                     headers={'Host': self.url['host']},
