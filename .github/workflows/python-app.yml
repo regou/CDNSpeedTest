@@ -10,8 +10,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-macos:
+    runs-on: macos-latest
     strategy:
       matrix:
         python-version: [3.8]
@@ -30,10 +30,46 @@ jobs:
       run: |
         # Build All-in-one file
         pyinstaller main.py --onefile --clean -n CdnSpeedTest
+    - name: copy file
+        run: |
+          cp config.yml dist/config.yml
+          cp ipv6.txt dist/ipv6.txt
     - uses: actions/upload-artifact@v2
       with:
-        name: release_xinux
+        name: release_macos
         path: |
           dist/CdnSpeedTest
-          config.yml
-          ipv6.txt
+          dist/config.yml
+          dist/ipv6.txt
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [ 3.8 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build file
+        run: |
+          # Build All-in-one file
+          pyinstaller main.py --onefile --clean -n CdnSpeedTest
+      - name: copy file
+          run: |
+            cp config.yml dist/config.yml
+            cp ipv6.txt dist/ipv6.txt
+      - uses: actions/upload-artifact@v2
+        with:
+          name: release_windows
+          path: |
+            dist/CdnSpeedTest
+            dist/config.yml
+            dist/ipv6.txt
