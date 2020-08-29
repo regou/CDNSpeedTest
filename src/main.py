@@ -1,7 +1,7 @@
 import random,time
 from pathlib import Path
 from ipaddress import IPv6Network, IPv6Address
-from SpeedTest import SpeedTest
+from src.SpeedTest import SpeedTest
 from progressbar import ProgressBar
 from pandas import DataFrame
 import pydash as _
