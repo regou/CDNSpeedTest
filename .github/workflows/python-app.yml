@@ -57,19 +57,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
       - name: Build file
         run: |
           # Build All-in-one file
           pyinstaller main.py --onefile --clean -n CdnSpeedTest
       - name: copy file
         run: |
-          cp config.yml dist/config.yml
-          cp ipv6.txt dist/ipv6.txt
+          COPY config.yml dist\config.yml
+          COPY ipv6.txt dist\ipv6.txt
       - uses: actions/upload-artifact@v2
         with:
           name: release_windows
           path: |
-            dist/CdnSpeedTest
-            dist/config.yml
-            dist/ipv6.txt
+            dist\CdnSpeedTest*
+            dist\config.yml
+            dist\ipv6.txt
