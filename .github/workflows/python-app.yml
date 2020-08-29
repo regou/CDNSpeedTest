@@ -63,9 +63,9 @@ jobs:
           # Build All-in-one file
           pyinstaller main.py --onefile --clean -n CdnSpeedTest
       - name: copy file
-          run: |
-            cp config.yml dist/config.yml
-            cp ipv6.txt dist/ipv6.txt
+        run: |
+          cp config.yml dist/config.yml
+          cp ipv6.txt dist/ipv6.txt
       - uses: actions/upload-artifact@v2
         with:
           name: release_windows
