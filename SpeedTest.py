@@ -9,9 +9,9 @@ class SpeedTest:
     def __init__(self, ip):
         self.testIp = ip
         self.speed = 0
-        self.testTime = 10
         self.bootTime = 2.5  # 到满速度的时间可能要2秒
 
+    test_duration = 10
     connect_timeout = 3
 
     url = {
@@ -36,14 +36,14 @@ class SpeedTest:
                     f"{prefix}{self.url['path']}",
                     headers={'Host': self.url['host']},
                     verify=False, stream=True,
-                    timeout=(3, self.testTime + self.bootTime + 5)
+                    timeout=(self.connect_timeout, self.test_duration + self.bootTime + 5)
                 )
 
             setattr(self, 'start', real_start)
 
     def test(self):
         r = self.start()
-        end_time = time.time() + self.testTime + self.bootTime
+        end_time = time.time() + self.test_duration + self.bootTime
         final_size = 0
         block_size = 1024  # 1k
         n_chunk = 1
@@ -60,7 +60,7 @@ class SpeedTest:
                 break
 
         # bar.finish();
-        self.speed = (final_size / 1024) / self.testTime  # xM/s
+        self.speed = (final_size / 1024) / self.test_duration  # xM/s
 
     def result2string(self):
         return f"{self.speed}Mb/s"
