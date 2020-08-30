@@ -1,6 +1,6 @@
 import random, time
 from pathlib import Path
-from ipaddress import IPv6Network, IPv6Address
+from ipaddress import ip_address, ip_network
 from SpeedTest import SpeedTest
 from progressbar import ProgressBar
 import pydash as _
@@ -13,6 +13,7 @@ speed_tests = []
 
 from_txt_path = Path(config.getPropertyWithDefault('ip_ranges_file', './ipv6.txt'))
 SpeedTest.connect_timeout = config.getPropertyWithDefault('connect_timeout', 1)
+SpeedTest.test_duration = config.getPropertyWithDefault('test_duration', 10)
 SpeedTest.url['protocol'] = config.getPropertyWithDefault('test_url.protocol', 'https:')
 SpeedTest.url['host'] = config.getProperty('test_url.host')
 SpeedTest.url['path'] = config.getProperty('test_url.path')
@@ -20,38 +21,22 @@ SpeedTest.url['path'] = config.getProperty('test_url.path')
 with open(from_txt_path, 'r') as f:
     subnets = _.map_(f.readlines(), lambda l: l.strip())
 
-networks = _.map_(subnets, lambda subnet: IPv6Network(subnet))
+networks = _.map_(subnets, lambda subnet: ip_network(subnet))
 
-# seed_num = min(seed_num, len(networks))
 
 for x in range(seed_num):
     network = _.sample(networks)
     if network.max_prefixlen - network.prefixlen == 0:
-        ip = IPv6Address(network.network_address)
+        ip = ip_address(network.network_address)
     else:
-        ip = IPv6Address(network.network_address + random.getrandbits(network.max_prefixlen - network.prefixlen))
+        ip = ip_address(network.network_address + random.getrandbits(network.max_prefixlen - network.prefixlen))
 
     st = SpeedTest(str(ip))
     st.init()
     speed_tests.append(st)
 
 bar = ProgressBar(max_value=len(speed_tests))
-columns = ['ip', 'When', 'Speed(Mb/s)']
-
-data = []
-def run_with_progress(st, index):
-    global df
-    bar.update(index)
-    try:
-        st.test()
-    except Exception:
-        pass
-    data.append([st.testIp, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.startTime)), st.speed])
-    time.sleep(0.005)
-
-
-_.for_each(speed_tests, run_with_progress)
-
+columns = ['ip', 'When', 'Speed(MB/s)']
 
 has_header = False
 try:
@@ -61,16 +46,40 @@ try:
 except Exception:
     pass
 
+
+def write_row(row, writer):
+    writer.writerow({
+        fieldnames[0]: row[0],
+        fieldnames[1]: row[1],
+        fieldnames[2]: row[2]
+    })
+
+
 with open('result.csv', 'a', newline='') as csvfile:
     fieldnames = columns
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
     if not has_header:
-        writer.writeheader()
+            writer.writeheader()
 
-    _.for_each(data, lambda row: writer.writerow({
-        fieldnames[0]: row[0],
-        fieldnames[1]: row[1],
-        fieldnames[2]: row[2]
-    }))
+
+    def run_with_progress(st, index):
+        global df
+        bar.update(index)
+        try:
+            st.test()
+        except Exception:
+            pass
+
+        row = [st.testIp, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.startTime)), st.speed]
+        write_row(row, writer)
+        time.sleep(0.005)
+        return row
+    _.for_each(speed_tests, run_with_progress)
+
+
+
+
+
+
 
