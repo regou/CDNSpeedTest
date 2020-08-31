@@ -57,6 +57,7 @@ class SpeedTest:
                 # bar.update(i + 1)
             else:
                 final_size = i
+                r.close()
                 break
 
         # bar.finish();
